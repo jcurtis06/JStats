@@ -27,6 +27,7 @@ repositories {
 }
 
 dependencies {
+//    implementation 'org.xerial:sqlite-jdbc:3.44.1.0'
     compileOnly 'io.papermc.paper:paper-api:' + paperVersion
     shadow "org.jetbrains.kotlin:kotlin-stdlib:" + kotlinVersion
 }
@@ -65,4 +66,3 @@ kotlin {
 tasks.build {
     dependsOn shadowJar
 }
-

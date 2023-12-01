@@ -1,4 +1,10 @@
-main: io.jcurtis.kotlinexample.KotlinPaper
+main: io.jcurtis.jstats.JStats
 version: 1.0
-name: KotlinPaper
-api-version: 1.19
+name: JStats
+api-version: 1.20
+commands:
+  stats:
+    description: Shows the stats of a player
+    usage: /<command> <player>
+    permission: jstats.stats
+    aliases: [jstats]

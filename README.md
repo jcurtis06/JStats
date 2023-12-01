@@ -13,7 +13,7 @@ A template for PaperMC plugins using Gradle + Kotlin
 
 **Customizing**
 - To change the default module name, change the `rootProject.name` property in `settings.gradle.kts`
-- After renaming the default package (`io.jcurtis.kotlinexample`), you must also update the `plugin.yml` file to reflect the new path to the main class
+- After renaming the default package (`io.jcurtis.jstats`), you must also update the `plugin.yml` file to reflect the new path to the main class
 
 **Building**
 1. Run `gradle build`
