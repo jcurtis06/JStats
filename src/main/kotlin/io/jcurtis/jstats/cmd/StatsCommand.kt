@@ -29,7 +29,6 @@ class StatsCommand : CommandExecutor {
                     sender.sendMessage("Player $playerName not found")
                 }
             } else {
-                // send all stats
                 for (stat in registry.getStats()) {
                     val statValue = stat.getValueFor(sender.uniqueId).serialize()
                     sender.sendMessage("You have $statValue ${stat.name}")

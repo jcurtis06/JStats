@@ -11,9 +11,10 @@ class StatRegistry(private val database: StatsDatabase) {
     fun registerStat(plugin: Plugin, stat: Stat) {
         stat.database = database
         stat.dataCache = DataCache(database, stat)
-        stat.id = plugin.name.lowercase() + ":" + stat.name.lowercase()
+        stat.category.add(0, plugin.name.lowercase())
+        stat.id = stat.category.joinToString(":") + ":" + stat.name.lowercase()
         stats.add(stat)
-        println("Registered stat: ${stat.name}")
+        println("Registered stat: ${stat.id}")
     }
 
     fun registerStat(plugin: Plugin, stat: Stat, category: String) {
@@ -35,10 +36,6 @@ class StatRegistry(private val database: StatsDatabase) {
 
     fun getStat(id: String): Stat? {
         return stats.find { it.id == id }
-    }
-
-    fun getStat(plugin: Plugin, name: String): Stat? {
-        return stats.find { it.id == plugin.name.lowercase() + ":" + name.lowercase() }
     }
 
     fun cleanup() {

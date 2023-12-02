@@ -10,58 +10,32 @@ import java.util.UUID
 
 class VanillaStat(
     name: String,
+    category: MutableList<String> = mutableListOf(),
     private val type: Statistic.Type = Statistic.Type.UNTYPED
-) : Stat(name, IntStat(0)) {
+) : Stat(name, IntStat(0), category) {
     override fun getValueFor(playerId: UUID): StatValue<*> {
         val player = Bukkit.getOfflinePlayer(playerId)
 
         when (type) {
             Statistic.Type.BLOCK -> {
-                val block = Material.getMaterial(name.split(":")[0]) ?: return IntStat(0)
+                val block = Material.getMaterial(name.uppercase()) ?: return IntStat(0)
 
-                return IntStat(player.getStatistic(Statistic.valueOf(name.uppercase()), block))
+                return IntStat(player.getStatistic(Statistic.valueOf(category[1].uppercase()), block))
             }
             Statistic.Type.ITEM -> {
-                val item = Material.getMaterial(name.split(":")[0]) ?: return IntStat(0)
+                val item = Material.getMaterial(name.uppercase()) ?: return IntStat(0)
 
-                return IntStat(player.getStatistic(Statistic.valueOf(name.uppercase()), item))
+                return IntStat(player.getStatistic(Statistic.valueOf(category[1].uppercase()), item))
             }
             Statistic.Type.ENTITY -> {
-                println("Entity: " + name.split(":")[1])
-                println("Name: " + name.uppercase())
-                val entity = EntityType.valueOf(name.split(":")[1].uppercase())
+                val entity = EntityType.valueOf(name.uppercase())
                 if (entity == EntityType.UNKNOWN) {
                     return IntStat(0)
                 }
-                return IntStat(player.getStatistic(Statistic.valueOf(name.uppercase().split(":")[0]), entity))
+                return IntStat(player.getStatistic(Statistic.valueOf(category[1].uppercase()), entity))
             }
             Statistic.Type.UNTYPED -> {
                 return IntStat(player.getStatistic(Statistic.valueOf(name.uppercase())))
-            }
-        }
-    }
-
-    override fun setValueFor(playerId: UUID, value: StatValue<*>) {
-        val player = Bukkit.getOfflinePlayer(playerId)
-
-        when (type) {
-            Statistic.Type.BLOCK -> {
-                val block = Material.getMaterial(name.split(":")[0]) ?: return
-
-                player.setStatistic(Statistic.valueOf(name.uppercase()), block, value.value as Int)
-            }
-            Statistic.Type.ITEM -> {
-                val item = Material.getMaterial(name.split(":")[0]) ?: return
-
-                player.setStatistic(Statistic.valueOf(name.uppercase()), item, value.value as Int)
-            }
-            Statistic.Type.ENTITY -> {
-                val entity = EntityType.valueOf(name.split(":")[0].uppercase())
-
-                player.setStatistic(Statistic.valueOf(name.uppercase()), entity, value.value as Int)
-            }
-            Statistic.Type.UNTYPED -> {
-                player.setStatistic(Statistic.valueOf(name.uppercase()), value.value as Int)
             }
         }
     }

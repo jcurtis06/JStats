@@ -10,6 +10,7 @@ import java.util.UUID
 open class Stat(
     val name: String,
     private val defaultValue: StatValue<*>,
+    val category: MutableList<String> = mutableListOf(),
 ) {
     lateinit var database: StatsDatabase
     lateinit var dataCache: DataCache

@@ -41,17 +41,33 @@ class JStats: JavaPlugin() {
                 when (vanillaStat.type) {
                     Statistic.Type.BLOCK -> {
                         for (block in Material.entries) {
-                            registry.registerStat(this, VanillaStat(vanillaStat.name + ":" + block.name, Statistic.Type.BLOCK))
+                            registry.registerStat(
+                                this,
+                                VanillaStat(
+                                    block.name.lowercase(),
+                                    mutableListOf(vanillaStat.name.lowercase()),
+                                    Statistic.Type.BLOCK)
+                            )
                         }
                     }
                     Statistic.Type.ITEM -> {
                         for (item in Material.entries) {
-                            registry.registerStat(this, VanillaStat(vanillaStat.name + ":" + item.name, Statistic.Type.ITEM))
+                            registry.registerStat(
+                                this,
+                                VanillaStat(
+                                    item.name.lowercase(),
+                                    mutableListOf(vanillaStat.name.lowercase()),
+                                    Statistic.Type.ITEM))
                         }
                     }
                     Statistic.Type.ENTITY -> {
                         for (entity in EntityType.entries) {
-                            registry.registerStat(this, VanillaStat(vanillaStat.name + ":" + entity.name, Statistic.Type.ENTITY))
+                            registry.registerStat(
+                                this,
+                                VanillaStat(
+                                    entity.name.lowercase(),
+                                    mutableListOf(vanillaStat.name.lowercase()),
+                                    Statistic.Type.ENTITY))
                         }
                     }
                     Statistic.Type.UNTYPED -> {
