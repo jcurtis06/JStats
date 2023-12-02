@@ -1,7 +1,6 @@
 package io.jcurtis.jstats.cmd
 
 import io.jcurtis.jstats.JStats
-import org.bukkit.Statistic
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
@@ -10,19 +9,33 @@ import org.bukkit.entity.Player
 class StatsCommand : CommandExecutor {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>?): Boolean {
         if (sender is Player) {
-            val stats = JStats.instance.registry.getStats()
-            sender.sendMessage("Your stats:")
-            for (stat in stats) {
-                sender.sendMessage("${stat.name}: ${stat.getValueFor(sender.uniqueId).serialize()}")
-            }
+            val registry = JStats.instance.registry
 
-            for (stat in Statistic.entries) {
-                if (!stat.isSubstatistic) {
-                    sender.sendMessage("${stat.name}: ${sender.getStatistic(stat)}")
+            if (args != null && args.isNotEmpty()) {
+                val statName = args[0]
+                val stat = registry.getStat(statName)
+
+                if (stat == null) {
+                    sender.sendMessage("Stat $statName not found")
+                    return true
+                }
+
+                val playerName = if (args.size > 1) args[1] else sender.name
+                val player = sender.server.getPlayer(playerName)
+                if (player != null) {
+                    val statValue = stat.getValueFor(player.uniqueId).serialize()
+                    sender.sendMessage("Player $playerName has $statValue $statName")
                 } else {
-                    sender.sendMessage("sub-stat")
+                    sender.sendMessage("Player $playerName not found")
+                }
+            } else {
+                // send all stats
+                for (stat in registry.getStats()) {
+                    val statValue = stat.getValueFor(sender.uniqueId).serialize()
+                    sender.sendMessage("You have $statValue ${stat.name}")
                 }
             }
+
         }
         return true
     }
