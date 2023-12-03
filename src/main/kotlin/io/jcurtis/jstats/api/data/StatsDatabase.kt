@@ -14,14 +14,35 @@ class StatsDatabase(path: String) {
         try {
             connection = DriverManager.getConnection("jdbc:sqlite:$path")
             val statement = connection.createStatement()
+
+            // Create Players Table
             statement.execute(
-                "CREATE TABLE IF NOT EXISTS stats (" +
-                        "stat_name TEXT NOT NULL," +
-                        "stat_value TEXT NOT NULL," +
-                        "player_uuid TEXT NOT NULL," +
-                        "PRIMARY KEY (stat_name, player_uuid)" +
+                "CREATE TABLE IF NOT EXISTS Players (" +
+                        "player_uuid TEXT PRIMARY KEY," +
+                        "player_name TEXT" +
                         ")"
             )
+
+            // Create Statistics Table
+            statement.execute(
+                "CREATE TABLE IF NOT EXISTS Statistics (" +
+                        "stat_id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                        "stat_name TEXT NOT NULL" +
+                        ")"
+            )
+
+            // Create PlayerStats Table
+            statement.execute(
+                "CREATE TABLE IF NOT EXISTS PlayerStats (" +
+                        "player_uuid TEXT NOT NULL," +
+                        "stat_id INTEGER NOT NULL," +
+                        "stat_value TEXT NOT NULL," +
+                        "PRIMARY KEY (player_uuid, stat_id)," +
+                        "FOREIGN KEY (player_uuid) REFERENCES Players(player_uuid)," +
+                        "FOREIGN KEY (stat_id) REFERENCES Statistics(stat_id)" +
+                        ")"
+            )
+
             statement.close()
         } catch (e: SQLException) {
             e.printStackTrace()
@@ -40,14 +61,22 @@ class StatsDatabase(path: String) {
 
     fun updateStatForPlayer(stat: Stat, playerId: UUID) {
         try {
-            val statement = connection.prepareStatement(
-                "INSERT OR REPLACE INTO stats (stat_name, stat_value, player_uuid) VALUES (?, ?, ?)"
+            val statIdStatement = connection.prepareStatement(
+                "SELECT stat_id FROM Statistics WHERE stat_name = ?"
             )
-            statement.setString(1, stat.name)
-            statement.setString(2, stat.getValueFor(playerId).serialize().toString())
-            statement.setString(3, playerId.toString())
-            statement.executeUpdate()
-            statement.close()
+            statIdStatement.setString(1, stat.name)
+            val statIdResult = statIdStatement.executeQuery()
+            val statId = if (statIdResult.next()) statIdResult.getInt("stat_id") else -1
+            statIdStatement.close()
+
+            val updateStatement = connection.prepareStatement(
+                "INSERT OR REPLACE INTO PlayerStats (player_uuid, stat_id, stat_value) VALUES (?, ?, ?)"
+            )
+            updateStatement.setString(1, playerId.toString())
+            updateStatement.setInt(2, statId)
+            updateStatement.setString(3, stat.getValueFor(playerId).serialize().toString())
+            updateStatement.executeUpdate()
+            updateStatement.close()
         } catch (e: SQLException) {
             e.printStackTrace()
         }
@@ -56,7 +85,10 @@ class StatsDatabase(path: String) {
     fun getStatValueFor(stat: Stat, playerId: UUID): StatValue<*>? {
         try {
             val statement = connection.prepareStatement(
-                "SELECT stat_value FROM stats WHERE stat_name = ? AND player_uuid = ?"
+                "SELECT ps.stat_value " +
+                        "FROM PlayerStats ps " +
+                        "INNER JOIN Statistics s ON ps.stat_id = s.stat_id " +
+                        "WHERE s.stat_name = ? AND ps.player_uuid = ?"
             )
             statement.setString(1, stat.name)
             statement.setString(2, playerId.toString())
@@ -68,10 +100,24 @@ class StatsDatabase(path: String) {
             }
             statement.close()
 
-            return stat.getType().deserialize(value ?: return null)
+            return if (value != null) stat.getType().deserialize(value) else null
+        } catch (e: SQLException) {
+            e.printStackTrace()
+            return null
+        }
+    }
+
+    fun addPlayer(playerId: UUID, playerName: String) {
+        try {
+            val statement = connection.prepareStatement(
+                "INSERT OR IGNORE INTO Players (player_uuid, player_name) VALUES (?, ?)"
+            )
+            statement.setString(1, playerId.toString())
+            statement.setString(2, playerName)
+            statement.executeUpdate()
+            statement.close()
         } catch (e: SQLException) {
             e.printStackTrace()
         }
-        return null
     }
 }

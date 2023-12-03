@@ -7,6 +7,7 @@ import io.jcurtis.jstats.api.stat.VanillaStat
 import io.jcurtis.jstats.api.stat.value.IntStat
 import io.jcurtis.jstats.cmd.StatsCommand
 import io.jcurtis.jstats.cmd.StatsTabCompleter
+import io.jcurtis.jstats.event.JoinEvent
 import org.bukkit.Material
 import org.bukkit.Statistic
 import org.bukkit.entity.EntityType
@@ -14,6 +15,7 @@ import org.bukkit.plugin.java.JavaPlugin
 
 class JStats: JavaPlugin() {
     lateinit var registry: StatRegistry
+    lateinit var database: StatsDatabase
 
     companion object {
         lateinit var instance: JStats
@@ -22,7 +24,10 @@ class JStats: JavaPlugin() {
     override fun onEnable() {
         saveDefaultConfig()
         instance = this
-        registry = StatRegistry(StatsDatabase(dataFolder.absolutePath + "/stats.db"))
+        database = StatsDatabase(dataFolder.absolutePath + "/stats.db")
+        registry = StatRegistry(database)
+
+        server.pluginManager.registerEvents(JoinEvent(database), this)
 
         getCommand("stats")?.setExecutor(StatsCommand())
         getCommand("stats")?.tabCompleter = StatsTabCompleter()
