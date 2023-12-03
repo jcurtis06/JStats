@@ -12,21 +12,14 @@ class StatsCommand : CommandExecutor {
             val registry = JStats.instance.registry
 
             if (args != null && args.isNotEmpty()) {
-                val statName = args[0]
-                val stat = registry.getStat(statName)
+                val statId = args.joinToString(":")
+                val stat = registry.getStat(statId)
 
-                if (stat == null) {
-                    sender.sendMessage("Stat $statName not found")
-                    return true
-                }
-
-                val playerName = if (args.size > 1) args[1] else sender.name
-                val player = sender.server.getPlayer(playerName)
-                if (player != null) {
-                    val statValue = stat.getValueFor(player.uniqueId).serialize()
-                    sender.sendMessage("Player $playerName has $statValue $statName")
+                if (stat != null) {
+                    val statValue = stat.getValueFor(sender.uniqueId).serialize()
+                    sender.sendMessage("You have $statValue ${stat.name}")
                 } else {
-                    sender.sendMessage("Player $playerName not found")
+                    sender.sendMessage("Stat not found $statId")
                 }
             } else {
                 for (stat in registry.getStats()) {

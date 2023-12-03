@@ -7,6 +7,7 @@ import org.bukkit.plugin.Plugin
 
 class StatRegistry(private val database: StatsDatabase) {
     private val stats = mutableListOf<Stat>()
+    private val providers = mutableListOf<String>()
 
     fun registerStat(plugin: Plugin, stat: Stat) {
         stat.database = database
@@ -14,7 +15,7 @@ class StatRegistry(private val database: StatsDatabase) {
         stat.category.add(0, plugin.name.lowercase())
         stat.id = stat.category.joinToString(":") + ":" + stat.name.lowercase()
         stats.add(stat)
-        println("Registered stat: ${stat.id}")
+        providers.add(plugin.name.lowercase())
     }
 
     fun registerStat(plugin: Plugin, stat: Stat, category: String) {
@@ -22,12 +23,10 @@ class StatRegistry(private val database: StatsDatabase) {
         stat.dataCache = DataCache(database, stat)
         stat.id = plugin.name.lowercase() + ":" + category + ":" + stat.name.lowercase()
         stats.add(stat)
-        println("Registered stat: ${stat.name}")
     }
 
     fun unregisterStat(stat: Stat) {
         stats.remove(stat)
-        println("Unregistered stat: ${stat.name}")
     }
 
     fun getStats(): List<Stat> {
@@ -36,6 +35,10 @@ class StatRegistry(private val database: StatsDatabase) {
 
     fun getStat(id: String): Stat? {
         return stats.find { it.id == id }
+    }
+
+    fun getProviders(): List<String> {
+        return providers
     }
 
     fun cleanup() {

@@ -6,6 +6,7 @@ import io.jcurtis.jstats.api.stat.Stat
 import io.jcurtis.jstats.api.stat.VanillaStat
 import io.jcurtis.jstats.api.stat.value.IntStat
 import io.jcurtis.jstats.cmd.StatsCommand
+import io.jcurtis.jstats.cmd.StatsTabCompleter
 import org.bukkit.Material
 import org.bukkit.Statistic
 import org.bukkit.entity.EntityType
@@ -24,6 +25,7 @@ class JStats: JavaPlugin() {
         registry = StatRegistry(StatsDatabase(dataFolder.absolutePath + "/stats.db"))
 
         getCommand("stats")?.setExecutor(StatsCommand())
+        getCommand("stats")?.tabCompleter = StatsTabCompleter()
 
         server.scheduler.scheduleSyncRepeatingTask(this, {
             registry.cleanup()
@@ -71,11 +73,15 @@ class JStats: JavaPlugin() {
                         }
                     }
                     Statistic.Type.UNTYPED -> {
-                        registry.registerStat(this, VanillaStat(vanillaStat.name))
+                        registry.registerStat(this, VanillaStat(vanillaStat.name.lowercase()))
                     }
                 }
+            } else {
+                registry.registerStat(this, VanillaStat(vanillaStat.name.lowercase()))
             }
         }
+
+        println("Registered ${registry.getStats().size} stats.")
 
         for (player in server.onlinePlayers) {
             stat.setValueFor(player.uniqueId, IntStat(1))
